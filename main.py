@@ -4,25 +4,46 @@ from groq import Groq
 import os
 
 app = Flask(__name__)
-CORS(app) # Permite que seu site acesse o servidor
+CORS(app)
 
-# Configuração da API (Usaremos variáveis de ambiente por segurança)
 client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
+
+# CONFIGURAÇÕES DO PROJETO X
+SENHA_MESTRE = "1234" # ALTERE PARA A SENHA QUE DESEJAR
+MEMORIA_GLOBAL = {} # Dicionário para guardar conversas de diferentes usuários
 
 @app.route('/chat', methods=['POST'])
 def chat():
     dados = request.json
     mensagem_usuario = dados.get('mensagem')
-    
+    senha_enviada = dados.get('senha')
+    usuario_id = dados.get('usuario_id', 'default') # Para identificar quem está falando
+
+    # 1. VERIFICAÇÃO DE SEGURANÇA
+    if senha_enviada != SENHA_MESTRE:
+        return jsonify({"resposta": "ACESSO NEGADO. Senha incorreta, senhor."}), 403
+
+    # 2. GESTÃO DE MEMÓRIA (Persistência por sessão)
+    if usuario_id not in MEMORIA_GLOBAL:
+        MEMORIA_GLOBAL[usuario_id] = [
+            {"role": "system", "content": "Você é o Jarvis, assistente pessoal do Projeto X. Personalidade: Sarcástico, ultra-eficiente, leal e técnico. Use termos como 'Senhor' e 'Sistemas Online'."}
+        ]
+
+    # Adiciona a nova fala ao histórico
+    MEMORIA_GLOBAL[usuario_id].append({"role": "user", "content": mensagem_usuario})
+
     try:
+        # 3. CHAMADA DA IA COM CONTEXTO COMPLETO
         completion = client.chat.completions.create(
             model="llama-3.3-70b-versatile",
-            messages=[
-                {"role": "system", "content": "Você é o Jarvis, assistente do Projeto X."},
-                {"role": "user", "content": mensagem_usuario}
-            ]
+            messages=MEMORIA_GLOBAL[usuario_id]
         )
+        
         resposta = completion.choices[0].message.content
+        
+        # Guarda a resposta do Jarvis na memória para a próxima pergunta
+        MEMORIA_GLOBAL[usuario_id].append({"role": "assistant", "content": resposta})
+        
         return jsonify({"resposta": resposta})
     except Exception as e:
         return jsonify({"erro": str(e)}), 500
