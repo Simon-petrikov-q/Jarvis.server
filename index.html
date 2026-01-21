@@ -3,60 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jarvis - Projeto X</title>
+    <title>KILLMOON</title>
     <style>
-        body { background: #050505; color: #eee; font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        body { background: #050505; color: #eee; font-family: sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; }
+        header { padding: 10px; text-align: center; border-bottom: 1px solid #1a1a1a; color: #7209b7; font-size: 14px; font-weight: bold; }
         
-        header { padding: 15px; text-align: center; border-bottom: 1px solid #1a1a1a; color: #7209b7; font-weight: bold; letter-spacing: 2px; }
+        #chat-box { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 12px; }
 
-        #chat-box { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
-        
-        /* O POLVO ANIMADO */
-        .octopus-container { position: relative; width: 70px; height: 70px; margin: 10px 0; align-self: flex-start; }
+        /* POLVO PEQUENO E DISCRETO */
+        .octopus-mini { position: relative; width: 40px; height: 40px; margin-bottom: 5px; }
         .octopus { 
-            width: 55px; height: 55px; background: #000; border-radius: 50%; 
-            position: absolute; top: 7px; left: 7px; border: 2px solid #3c096c;
-            animation: breathe 3s ease-in-out infinite; z-index: 2;
+            width: 32px; height: 32px; background: #000; border-radius: 50%; 
+            position: absolute; top: 4px; left: 4px; border: 1px solid #3c096c;
+            animation: breathe 3s infinite; z-index: 2;
         }
-        .eyes { position: absolute; top: 20px; left: 14px; display: flex; gap: 10px; }
-        .eye { width: 9px; height: 9px; background: #9d4edd; border-radius: 50%; box-shadow: 0 0 12px #9d4edd; }
-        
-        /* AURA RODANTE */
+        .eyes { position: absolute; top: 12px; left: 8px; display: flex; gap: 6px; }
+        .eye { width: 5px; height: 5px; background: #9d4edd; border-radius: 50%; box-shadow: 0 0 8px #9d4edd; }
         .ring {
-            width: 66px; height: 66px; border: 2px solid transparent;
-            border-top: 2px solid #7209b7; border-right: 2px solid #3c096c; border-radius: 50%;
+            width: 38px; height: 38px; border: 1px solid transparent;
+            border-top: 1px solid #7209b7; border-radius: 50%;
             position: absolute; animation: spin 2s linear infinite; z-index: 1;
         }
 
-        @keyframes breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.08); } }
+        @keyframes breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
         @keyframes spin { 100% { transform: rotate(360deg); } }
 
-        /* BALÕES DE MENSAGEM */
-        .message { padding: 12px 18px; border-radius: 20px; max-width: 85%; font-size: 14px; line-height: 1.4; }
-        .jarvis { background: #111; border: 1px solid #222; align-self: flex-start; border-bottom-left-radius: 2px; }
-        .user { background: #222; align-self: flex-end; border-bottom-right-radius: 2px; }
+        .message { padding: 10px 14px; border-radius: 15px; max-width: 85%; font-size: 14px; }
+        .jarvis { background: #111; border: 1px solid #222; align-self: flex-start; }
+        .user { background: #7209b7; align-self: flex-end; }
 
-        /* ÁREA DE INPUT */
-        .input-area { background: #0a0a0a; padding: 20px; display: flex; gap: 10px; border-top: 1px solid #1a1a1a; }
-        input { background: #161616; border: 1px solid #222; color: #fff; padding: 12px 15px; border-radius: 25px; outline: none; transition: 0.3s; }
-        input:focus { border-color: #7209b7; }
+        /* INPUTS ORGANIZADOS */
+        .input-area { background: #0a0a0a; padding: 15px; display: flex; gap: 8px; border-top: 1px solid #1a1a1a; }
+        input { background: #161616; border: 1px solid #222; color: #fff; padding: 10px; border-radius: 20px; outline: none; }
+        #senha { width: 50px; text-align: center; }
         #msg { flex: 1; }
-        button { background: #7209b7; color: white; border: none; border-radius: 50%; width: 45px; height: 45px; cursor: pointer; font-size: 18px; transition: 0.3s; }
-        button:active { transform: scale(0.9); background: #5a189a; }
+        button { background: #7209b7; color: white; border: none; border-radius: 50%; width: 40px; height: 40px; cursor: pointer; }
     </style>
 </head>
 <body>
-    <header>JARVIS - PROJETO X</header>
+    <header>KILLMOON SYSTEM</header>
     <div id="chat-box">
-        <div class="octopus-container">
+        <div class="octopus-mini">
             <div class="ring"></div>
             <div class="octopus"><div class="eyes"><div class="eye"></div><div class="eye"></div></div></div>
         </div>
-        <div class="message jarvis">Conexão estabelecida, senhor Petrikov. O que vamos construir hoje?</div>
+        <div class="message jarvis">Killmoon online. Aguardando PIN e comando, senhor Petrikov.</div>
     </div>
     <div class="input-area">
-        <input type="password" id="senha" placeholder="PIN" style="width: 60px; flex: none;">
-        <input type="text" id="msg" placeholder="Digite seu comando...">
+        <input type="password" id="senha" placeholder="PIN">
+        <input type="text" id="msg" placeholder="Comando...">
         <button onclick="enviar()">➤</button>
     </div>
 
@@ -65,29 +60,22 @@
             const msgInput = document.getElementById('msg');
             const senhaInput = document.getElementById('senha');
             const chatBox = document.getElementById('chat-box');
-            
             if(!msgInput.value) return;
 
-            const texto = msgInput.value;
-            chatBox.innerHTML += `<div class="message user">${texto}</div>`;
+            const userMsg = msgInput.value;
+            chatBox.innerHTML += `<div class="message user">${userMsg}</div>`;
             msgInput.value = '';
-            chatBox.scrollTop = chatBox.scrollHeight;
 
             try {
-                // URL já configurada para o seu servidor
                 const res = await fetch('https://jarvis-server-z99p.onrender.com/chat', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        mensagem: texto, 
-                        senha: senhaInput.value,
-                        usuario_id: "Simon-Petrikov-q"
-                    })
+                    body: JSON.stringify({mensagem: userMsg, senha: senhaInput.value})
                 });
                 const data = await res.json();
                 chatBox.innerHTML += `<div class="message jarvis">${data.resposta}</div>`;
             } catch (e) {
-                chatBox.innerHTML += `<div class="message jarvis" style="color: #ff4d4d;">Falha na rede. Verifique se o Render está Live.</div>`;
+                chatBox.innerHTML += `<div class="message jarvis" style="color:red">Erro de conexão.</div>`;
             }
             chatBox.scrollTop = chatBox.scrollHeight;
         }
