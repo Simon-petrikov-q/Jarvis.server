@@ -7,15 +7,14 @@ from pymongo import MongoClient
 app = Flask(__name__)
 CORS(app)
 
-# Tenta ligar ao MongoDB com timeout curto para não travar o Render
+# Configuração estável do MongoDB
 try:
     MONGO_URI = os.environ.get("MONGO_URI")
     client_mongo = MongoClient(MONGO_URI, serverSelectionTimeoutMS=2000)
     db = client_mongo['jarvis_db']
     collection = db['conversas']
-    print("Conexão com MongoDB preparada.")
 except Exception as e:
-    print(f"Aviso: MongoDB offline ou erro de URI: {e}")
+    print(f"Erro MongoDB: {e}")
 
 client_groq = Groq(api_key=os.environ.get("GROQ_API_KEY"))
 SENHA_MESTRE = "1234"
@@ -25,19 +24,18 @@ def chat():
     try:
         dados = request.json
         msg = dados.get('mensagem', '')
-        senha = dados.get('senha')
+        senha = str(dados.get('senha', ''))
         uid = "Simon-Petrikov-q"
 
-        if str(senha) != SENHA_MESTRE:
-            return jsonify({"resposta": "ACESSO NEGADO. PIN INCORRETO."}), 403
+        if senha != SENHA_MESTRE:
+            return jsonify({"resposta": "ACESSO NEGADO. DIGITE O PIN CORRETO."}), 403
 
-        # Recuperação de memória
-        historico = [{"role": "system", "content": "Você é o Jarvis."}]
+        # Memória do Killmoon
+        historico = [{"role": "system", "content": "Você é o Killmoon, assistente direto de Simon-Petrikov-q."}]
         try:
             doc = collection.find_one({"_id": uid})
             if doc: historico = doc['mensagens']
-        except:
-            print("Erro ao ler banco, usando memória temporária.")
+        except: pass
 
         historico.append({"role": "user", "content": msg})
 
@@ -48,15 +46,13 @@ def chat():
         resposta = completion.choices[0].message.content
         historico.append({"role": "assistant", "content": resposta})
 
-        # Salva se o banco estiver disponível
         try:
             collection.update_one({"_id": uid}, {"$set": {"mensagens": historico}}, upsert=True)
-        except:
-            pass
+        except: pass
 
         return jsonify({"resposta": resposta})
     except Exception as e:
-        return jsonify({"resposta": f"Erro interno: {str(e)}"}), 500
+        return jsonify({"resposta": f"Erro: {str(e)}"}), 500
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=int(os.environ.get("PORT", 5000)))
