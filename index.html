@@ -2,69 +2,73 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>KILLMOON</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Killmoon - Projeto X</title>
     <style>
-        body { background: #000; color: #fff; font-family: sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
-        #chat-box { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 12px; }
+        body { background: #0a0a0a; color: #eee; font-family: sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; }
+        #chat-box { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 10px; }
         
-        /* POLVO KILLMOON AJUSTADO */
-        .octopus-container { width: 40px; height: 40px; align-self: flex-start; margin-bottom: 5px; }
-        .octopus-img { 
-            width: 100%; height: 100%; 
-            filter: invert(1) sepia(1) saturate(5) hue-rotate(240deg);
-            animation: breathe 3s infinite ease-in-out;
+        .octopus-container { position: relative; width: 60px; height: 60px; margin-bottom: 10px; align-self: flex-start; }
+        .octopus { 
+            width: 50px; height: 50px; background: #000; border-radius: 50%; 
+            position: absolute; top: 5px; left: 5px; border: 2px solid #5a189a;
+            animation: breathe 3s ease-in-out infinite;
+        }
+        .eyes { position: absolute; top: 18px; left: 12px; display: flex; gap: 8px; }
+        .eye { width: 8px; height: 8px; background: #9d4edd; border-radius: 50%; box-shadow: 0 0 10px #9d4edd; }
+        
+        .ring {
+            width: 56px; height: 56px; border: 2px solid transparent;
+            border-top: 2px solid #7209b7; border-radius: 50%;
+            position: absolute; animation: spin 2s linear infinite;
         }
 
-        @keyframes breathe { 0%, 100% { transform: scale(1); opacity: 0.7; } 50% { transform: scale(1.1); opacity: 1; } }
+        @keyframes breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
 
-        .msg { padding: 10px 14px; border-radius: 15px; max-width: 85%; font-size: 14px; line-height: 1.4; }
-        .k-msg { background: #111; border: 1px solid #222; align-self: flex-start; color: #9d4edd; }
-        .u-msg { background: #7209b7; align-self: flex-end; color: #fff; }
+        .message { padding: 10px 15px; border-radius: 15px; max-width: 80%; font-size: 14px; }
+        .killmoon { background: #1a1a1a; border: 1px solid #333; color: #9d4edd; }
+        .user { background: #333; align-self: flex-end; color: #fff; }
 
-        .bottom-bar { background: #080808; padding: 12px; display: flex; gap: 8px; border-top: 1px solid #1a1a1a; }
-        input { background: #161616; border: 1px solid #333; color: #fff; padding: 10px; border-radius: 20px; outline: none; font-size: 14px; }
-        #pin { width: 45px; text-align: center; }
-        #txt { flex: 1; }
-        button { background: #7209b7; border: none; color: #fff; border-radius: 50%; width: 40px; height: 40px; cursor: pointer; }
+        .input-area { background: #111; padding: 15px; display: flex; gap: 10px; }
+        input { background: #222; border: 1px solid #444; color: #fff; padding: 10px; border-radius: 20px; flex: 1; outline: none; }
+        button { background: #7209b7; color: white; border: none; border-radius: 50%; width: 40px; cursor: pointer; }
     </style>
 </head>
 <body>
     <div id="chat-box">
         <div class="octopus-container">
-            <img src="https://i.imgur.com/8K9YQ9Y.png" class="octopus-img" alt="Killmoon">
+            <div class="ring"></div>
+            <div class="octopus"><div class="eyes"><div class="eye"></div><div class="eye"></div></div></div>
         </div>
-        <div class="msg k-msg">Killmoon online. Aguardando PIN e comando, senhor Petrikov.</div>
+        <div class="message killmoon"><b>Killmoon:</b> Sistema online, senhor Petrikov.</div>
     </div>
-    <div class="bottom-bar">
-        <input type="password" id="pin" placeholder="PIN">
-        <input type="text" id="txt" placeholder="Comando...">
-        <button onclick="send()">➤</button>
+    <div class="input-area">
+        <input type="text" id="msg" placeholder="Escreva seu comando...">
+        <button onclick="enviar()">></button>
     </div>
 
     <script>
-        async function send() {
-            const txt = document.getElementById('txt');
-            const pin = document.getElementById('pin');
+        async function enviar() {
+            const msgInput = document.getElementById('msg');
             const box = document.getElementById('chat-box');
-            if(!txt.value) return;
+            if(!msgInput.value) return;
 
-            box.innerHTML += `<div class="msg u-msg">${txt.value}</div>`;
-            const userMsg = txt.value;
-            txt.value = '';
+            const texto = msgInput.value;
+            box.innerHTML += `<div class="message user"><b>Você:</b> ${texto}</div>`;
+            msgInput.value = '';
             box.scrollTop = box.scrollHeight;
 
             try {
-                // URL ATUALIZADA PARA O SEU NOVO SERVIDOR
                 const res = await fetch('https://jarvis-server-nlp5.onrender.com/chat', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({mensagem: userMsg, senha: pin.value})
+                    body: JSON.stringify({ mensagem: texto })
                 });
                 const data = await res.json();
-                box.innerHTML += `<div class="msg k-msg">${data.resposta}</div>`;
+                box.innerHTML += `<div class="message killmoon"><b>Killmoon:</b> ${data.resposta}</div>`;
             } catch (e) {
-                box.innerHTML += `<div class="msg k-msg" style="color:red">Erro de conexão com o servidor nlp5.</div>`;
+                box.innerHTML += `<div class="message killmoon" style="color:red">Erro de conexão.</div>`;
             }
             box.scrollTop = box.scrollHeight;
         }
