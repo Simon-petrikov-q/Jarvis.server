@@ -3,101 +3,70 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Projeto X - Jarvis</title>
+    <title>Jarvis - Projeto X</title>
     <style>
-        body { background-color: #050505; color: #00f2ff; font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        body { background: #0a0a0a; color: #eee; font-family: sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; }
+        #chat-box { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 10px; }
         
-        /* Cabeçalho Tecnológico */
-        header { padding: 15px; text-align: center; border-bottom: 2px solid #00f2ff; text-transform: uppercase; letter-spacing: 3px; box-shadow: 0 0 15px #00f2ff55; font-weight: bold; }
+        /* O POLVO */
+        .octopus-container { position: relative; width: 60px; height: 60px; margin-bottom: 10px; align-self: flex-start; }
+        .octopus { 
+            width: 50px; height: 50px; background: #000; border-radius: 50%; 
+            position: absolute; top: 5px; left: 5px; border: 2px solid #5a189a;
+            animation: breathe 3s ease-in-out infinite;
+        }
+        .eyes { position: absolute; top: 18px; left: 12px; display: flex; gap: 8px; }
+        .eye { width: 8px; height: 8px; background: #9d4edd; border-radius: 50%; box-shadow: 0 0 10px #9d4edd; }
+        
+        /* BARRA RODANTE */
+        .ring {
+            width: 56px; height: 56px; border: 2px solid transparent;
+            border-top: 2px solid #7209b7; border-radius: 50%;
+            position: absolute; animation: spin 2s linear infinite;
+        }
 
-        /* Painel de Segurança (Senha) */
-        #security-panel { background: #111; padding: 10px; display: flex; justify-content: center; gap: 10px; border-bottom: 1px solid #333; }
-        .key-input { background: #000; border: 1px solid #00f2ff; color: #00f2ff; padding: 8px; border-radius: 5px; text-align: center; width: 150px; font-family: monospace; }
+        @keyframes breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
 
-        /* Área de Chat */
-        #chat-container { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; background: radial-gradient(circle, #001a1a 0%, #000 100%); }
-        .mensagem { padding: 12px; border-radius: 8px; max-width: 85%; word-wrap: break-word; line-height: 1.4; }
-        .user { align-self: flex-end; background: #00f2ff22; border: 1px solid #00f2ff; color: #fff; }
-        .jarvis { align-self: flex-start; background: #111; border: 1px solid #555; box-shadow: inset 0 0 5px #00f2ff33; }
+        .message { padding: 10px 15px; border-radius: 15px; max-width: 80%; font-size: 14px; }
+        .jarvis { background: #1a1a1a; border: 1px solid #333; }
+        .user { background: #333; align-self: flex-end; }
 
-        /* Rodapé de Comandos */
-        #input-area { padding: 20px; background: #0a0a0a; border-top: 1px solid #333; display: flex; gap: 10px; }
-        #campo-texto { flex: 1; background: #000; border: 2px solid #00f2ff; color: #fff; padding: 15px; border-radius: 10px; font-size: 16px; outline: none; }
-        #campo-texto:focus { box-shadow: 0 0 15px #00f2ffaa; }
-        button { background: #00f2ff; color: #000; border: none; padding: 15px 25px; border-radius: 10px; font-weight: bold; cursor: pointer; text-transform: uppercase; transition: 0.3s; }
-        button:hover { background: #fff; box-shadow: 0 0 20px #fff; }
+        .input-area { background: #111; padding: 15px; display: flex; gap: 10px; }
+        input { background: #222; border: 1px solid #444; color: #fff; padding: 10px; border-radius: 20px; flex: 1; outline: none; }
+        button { background: #7209b7; color: white; border: none; border-radius: 50%; width: 40px; cursor: pointer; }
     </style>
 </head>
 <body>
-    <header>Sistemas Jarvis - Projeto X</header>
-
-    <div id="security-panel">
-        <label style="font-size: 12px;">CHAVE DE ACESSO:</label>
-        <input type="password" id="senha-acesso" class="key-input" placeholder="****">
+    <div id="chat-box">
+        <div class="octopus-container">
+            <div class="ring"></div>
+            <div class="octopus"><div class="eyes"><div class="eye"></div><div class="eye"></div></div></div>
+        </div>
+        <div class="message jarvis">Sistema Inicializado.</div>
     </div>
-    
-    <div id="chat-container">
-        <div class="mensagem jarvis">Sistemas Online. Aguardando autenticação e comandos, senhor.</div>
-    </div>
-
-    <div id="input-area">
-        <input type="text" id="campo-texto" placeholder="Escreva o seu comando...">
-        <button onclick="enviar()">Enviar</button>
+    <div class="input-area">
+        <input type="password" id="senha" placeholder="****" style="width: 50px; flex: none;">
+        <input type="text" id="msg" placeholder="Comando...">
+        <button onclick="enviar()">></button>
     </div>
 
     <script>
-        const API_URL = "https://jarvis-server-nlp5.onrender.com/chat";
-        const usuario_id = "sessao_" + Math.random().toString(36).substr(2, 9); // Cria um ID único para a memória do chat
-
         async function enviar() {
-            const input = document.getElementById('campo-texto');
-            const senhaInput = document.getElementById('senha-acesso');
-            const container = document.getElementById('chat-container');
+            const msg = document.getElementById('msg').value;
+            const senha = document.getElementById('senha').value;
+            if(!msg) return;
+            document.getElementById('chat-box').innerHTML += `<div class="message user">${msg}</div>`;
             
-            const texto = input.value.trim();
-            const senha = senhaInput.value.trim();
-
-            if (!texto) return;
-            if (!senha) {
-                alert("Senhor, a chave de acesso é obrigatória.");
-                return;
-            }
-
-            // Interface: Adiciona sua fala
-            container.innerHTML += `<div class="mensagem user"><b>Senhor:</b> ${texto}</div>`;
-            input.value = ""; 
-            container.scrollTop = container.scrollHeight;
-
-            try {
-                // Envia para o servidor com Senha e ID de Usuário (Memória)
-                const response = await fetch(API_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        mensagem: texto,
-                        senha: senha,
-                        usuario_id: usuario_id 
-                    })
-                });
-
-                const data = await response.json();
-                
-                if (response.status === 403) {
-                    container.innerHTML += `<div class="mensagem jarvis" style="border-color: red;"><b>SISTEMA:</b> ${data.resposta}</div>`;
-                } else {
-                    container.innerHTML += `<div class="mensagem jarvis"><b>Jarvis:</b> ${data.resposta}</div>`;
-                }
-
-            } catch (error) {
-                container.innerHTML += `<div class="mensagem jarvis" style="color: #ff4444;"><b>Erro:</b> Conexão perdida com o servidor.</div>`;
-            }
-            container.scrollTop = container.scrollHeight;
+            const res = await fetch('SUA_URL_DO_RENDER/chat', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({mensagem: msg, senha: senha})
+            });
+            const data = await res.json();
+            document.getElementById('chat-box').innerHTML += `<div class="message jarvis">${data.resposta}</div>`;
+            document.getElementById('msg').value = '';
         }
-
-        // Atalho Enter
-        document.getElementById('campo-texto').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') enviar();
-        });
     </script>
 </body>
 </html>
