@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projeto X - Jarvis</title>
+    <style>
+        body { background-color: #050505; color: #00f2ff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; }
+        header { padding: 20px; text-align: center; border-bottom: 1px solid #00f2ff; box-shadow: 0 0 15px #00f2ff33; }
+        #chat-container { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 10px; }
+        .mensagem { padding: 10px 15px; border-radius: 10px; max-width: 80%; line-height: 1.4; }
+        .user { align-self: flex-end; background: #00f2ff22; border: 1px solid #00f2ff; color: #fff; }
+        .jarvis { align-self: flex-start; background: #111; border: 1px solid #555; }
+        #input-area { padding: 20px; background: #111; display: flex; gap: 10px; }
+        input { flex: 1; background: #000; border: 1px solid #00f2ff; color: #fff; padding: 12px; border-radius: 5px; outline: none; }
+        button { background: #00f2ff; color: #000; border: none; padding: 10px 20px; border-radius: 5px; font-weight: bold; cursor: pointer; }
+        button:active { transform: scale(0.95); }
+    </style>
+</head>
+<body>
+    <header>SISTEMAS JARVIS - PROJETO X</header>
+    
+    <div id="chat-container">
+        <div class="mensagem jarvis">Aguardando ordens, senhor. O servidor está online?</div>
+    </div>
+
+    <div id="input-area">
+        <input type="text" id="campo-texto" placeholder="Digite seu comando...">
+        <button onclick="enviar()">ENVIAR</button>
+    </div>
+
+    <script>
+        // O LINK QUE VOCÊ ME PASSOU
+        const API_URL = "https://jarvis-server-nlp5.onrender.com/chat";
+
+        async function enviar() {
+            const input = document.getElementById('campo-texto');
+            const container = document.getElementById('chat-container');
+            const texto = input.value.trim();
+
+            if (!texto) return;
+
+            // Adiciona mensagem do usuário na tela
+            container.innerHTML += `<div class="mensagem user">${texto}</div>`;
+            input.value = "";
+            container.scrollTop = container.scrollHeight;
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ mensagem: texto })
+                });
+
+                const data = await response.json();
+                
+                // Adiciona resposta do Jarvis
+                const respostaJarvis = data.resposta || "Erro na resposta do sistema.";
+                container.innerHTML += `<div class="mensagem jarvis"><b>Jarvis:</b> ${respostaJarvis}</div>`;
+            } catch (error) {
+                container.innerHTML += `<div class="mensagem jarvis" style="color: #ff4444;"><b>Erro:</b> Não foi possível conectar ao servidor. Verifique se o Render não 'dormiu'.</div>`;
+            }
+            
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // Permite enviar com a tecla Enter
+        document.getElementById('campo-texto').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') enviar();
+        });
+    </script>
+</body>
+</html>
