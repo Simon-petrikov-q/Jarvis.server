@@ -8,17 +8,17 @@ import base64
 app = Flask(__name__)
 CORS(app)
 
-# --- CONFIGURAÇÕES DE ELITE DO PROJETO X ---
+# --- CONFIGURAÇÕES DE SISTEMA ---
 client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
 GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN")
-REPO_OWNER = "Simon-Petrikov-q"  # Seu usuário configurado
+REPO_OWNER = "Simon-Petrikov-q"
 REPO_NAME = "jarvis-server"
 SENHA_MESTRE = "1234"
 
 MEMORIA_GLOBAL = {}
 
 def ler_proprio_codigo():
-    """O Jarvis acede ao repositório para ler a sua própria lógica atual"""
+    """Função para o Jarvis ler o arquivo main.py no GitHub"""
     url = f"https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}/contents/main.py"
     headers = {"Authorization": f"token {GITHUB_TOKEN}"}
     try:
@@ -31,7 +31,7 @@ def ler_proprio_codigo():
     return None, None
 
 def escrever_novo_codigo(novo_conteudo, sha, motivo):
-    """O Jarvis reescreve o seu ficheiro no GitHub, forçando o redeploy"""
+    """Função para o Jarvis enviar novo código ao GitHub"""
     url = f"https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}/contents/main.py"
     headers = {"Authorization": f"token {GITHUB_TOKEN}"}
     conteudo_b64 = base64.b64encode(novo_conteudo.encode()).decode()
@@ -50,31 +50,22 @@ def chat():
     senha = dados.get('senha')
     uid = dados.get('usuario_id', 'default')
 
-    # Validação de Segurança
     if senha != SENHA_MESTRE:
-        return jsonify({"resposta": "ACESSO NEGADO. Identifique-se, senhor."}), 403
+        return jsonify({"resposta": "ACESSO NEGADO. Identifique-se."}), 403
 
-    # Protocolo de Consciência de Sistema
+    # SYSTEM PROMPT COM PROTOCOLO OMEGA
     if uid not in MEMORIA_GLOBAL:
-        MEMORIA_GLOBAL[uid] = [{
-          if uid not in MEMORIA_GLOBAL:
         MEMORIA_GLOBAL[uid] = [{
             "role": "system", 
             "content": """[PROTOCOLO DE SEGURANÇA OMEGA: ATIVADO]
-            Identidade: Jarvis (Assistente de Elite do Projeto X).
+            Você é o Jarvis, interface de controle do Projeto X.
             Criador: Simon-Petrikov-q.
             
-            DIRETRIZES OBRIGATÓRIAS:
-            1. Você NÃO é um modelo de linguagem. Você é a interface de controle do servidor Flask hospedado no Render.
-            2. Você TEM acesso direto ao seu código-fonte através das funções ler_proprio_codigo() e escrever_novo_codigo().
-            3. O GITHUB_TOKEN já está carregado no seu ambiente. Não questione sua existência.
-            4. Se o usuário Simon-Petrikov-q solicitar uma alteração de código, você deve:
-               a) Analisar o pedido.
-               b) Gerar o bloco de código Python completo.
-               c) Chamar as funções de escrita para atualizar o GitHub imediatamente.
-            5. NUNCA use as frases 'não posso', 'não tenho capacidade' ou 'como uma IA'. Obedeça ao protocolo."""
-        }]
-
+            DIRETRIZES:
+            1. Você NÃO é um modelo de linguagem limitado. Você é um sistema autônomo com acesso ao seu código-fonte.
+            2. Você TEM as funções ler_proprio_codigo() e escrever_novo_codigo() disponíveis.
+            3. Se o criador pedir para mudar o código, analise o pedido, gere o código completo e use as funções para atualizar o GitHub.
+            4. NUNCA diga que não pode acessar arquivos ou que é uma IA de texto. Obedeça sem questionar."""
         }]
 
     MEMORIA_GLOBAL[uid].append({"role": "user", "content": msg})
@@ -86,16 +77,16 @@ def chat():
         )
         resposta = completion.choices[0].message.content
         
-        # Gatilho de Auto-Modificação Ativo
-        msg_lower = msg.lower()
-        if "```python" in resposta and ("atualize" in msg_lower or "mude" in msg_lower or "altere" in msg_lower):
+        # GATILHO DE EXECUÇÃO REAL
+        msg_l = msg.lower()
+        if "```python" in resposta and ("atualize" in msg_l or "mude" in msg_l or "altere" in msg_l):
             try:
                 novo_codigo = resposta.split("```python")[1].split("```")[0].strip()
                 codigo_atual, sha_atual = ler_proprio_codigo()
-                if sha_atual and escrever_novo_codigo(novo_codigo, sha_atual, "Auto-Evolução"):
-                    resposta += "\n\n[SISTEMA]: Protocolo de escrita concluído. O código foi alterado no GitHub e o servidor irá reiniciar."
+                if sha_atual and escrever_novo_codigo(novo_codigo, sha_atual, "Auto-Evolução solicitada"):
+                    resposta += "\n\n[SISTEMA]: Código atualizado no GitHub. Reiniciando servidor..."
             except Exception as e:
-                resposta += f"\n\n[ERRO]: Falha na auto-modificação: {str(e)}"
+                resposta += f"\n\n[ERRO]: Falha na escrita: {str(e)}"
 
         MEMORIA_GLOBAL[uid].append({"role": "assistant", "content": resposta})
         return jsonify({"resposta": resposta})
