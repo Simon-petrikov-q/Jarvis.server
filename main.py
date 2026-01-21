@@ -5,54 +5,34 @@ from groq import Groq
 from pymongo import MongoClient
 
 app = Flask(__name__)
-CORS(app)
-
-# Configuração estável do MongoDB
-try:
-    MONGO_URI = os.environ.get("MONGO_URI")
-    client_mongo = MongoClient(MONGO_URI, serverSelectionTimeoutMS=2000)
-    db = client_mongo['jarvis_db']
-    collection = db['conversas']
-except Exception as e:
-    print(f"Erro MongoDB: {e}")
+# CORS configurado para aceitar pedidos do seu domínio GitHub
+CORS(app, resources={r"/*": {"origins": "https://simon-petrikov-q.github.io"}})
 
 client_groq = Groq(api_key=os.environ.get("GROQ_API_KEY"))
-SENHA_MESTRE = "1234"
+PIN_SISTEMA = "1234"
 
-@app.route('/chat', methods=['POST'])
+@app.route('/chat', methods=['POST', 'OPTIONS'])
 def chat():
+    if request.method == 'OPTIONS':
+        return jsonify({"status": "ok"}), 200
+        
     try:
         dados = request.json
         msg = dados.get('mensagem', '')
-        senha = str(dados.get('senha', ''))
-        uid = "Simon-Petrikov-q"
+        pin = str(dados.get('senha', ''))
 
-        if senha != SENHA_MESTRE:
-            return jsonify({"resposta": "ACESSO NEGADO. DIGITE O PIN CORRETO."}), 403
+        if pin != PIN_SISTEMA:
+            return jsonify({"resposta": "PIN INVÁLIDO. ACESSO NEGADO."}), 403
 
-        # Memória do Killmoon
-        historico = [{"role": "system", "content": "Você é o Killmoon, assistente direto de Simon-Petrikov-q."}]
-        try:
-            doc = collection.find_one({"_id": uid})
-            if doc: historico = doc['mensagens']
-        except: pass
-
-        historico.append({"role": "user", "content": msg})
-
+        # Resposta direta para teste de estabilidade
         completion = client_groq.chat.completions.create(
             model="llama-3.3-70b-versatile",
-            messages=historico
+            messages=[{"role": "system", "content": "Você é o Killmoon."}, {"role": "user", "content": msg}]
         )
-        resposta = completion.choices[0].message.content
-        historico.append({"role": "assistant", "content": resposta})
-
-        try:
-            collection.update_one({"_id": uid}, {"$set": {"mensagens": historico}}, upsert=True)
-        except: pass
-
-        return jsonify({"resposta": resposta})
+        
+        return jsonify({"resposta": completion.choices[0].message.content})
     except Exception as e:
-        return jsonify({"resposta": f"Erro: {str(e)}"}), 500
+        return jsonify({"resposta": f"Erro no Killmoon: {str(e)}"}), 500
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=int(os.environ.get("PORT", 5000)))
