@@ -2,32 +2,31 @@ import os
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from groq import Groq
-from pymongo import MongoClient
 
 app = Flask(__name__)
-# CORS configurado para aceitar pedidos do seu domínio GitHub
-CORS(app, resources={r"/*": {"origins": "https://simon-petrikov-q.github.io"}})
+# Permite que o seu site no GitHub fale com este servidor
+CORS(app)
 
 client_groq = Groq(api_key=os.environ.get("GROQ_API_KEY"))
 PIN_SISTEMA = "1234"
 
-@app.route('/chat', methods=['POST', 'OPTIONS'])
+@app.route('/chat', methods=['POST'])
 def chat():
-    if request.method == 'OPTIONS':
-        return jsonify({"status": "ok"}), 200
-        
     try:
         dados = request.json
         msg = dados.get('mensagem', '')
         pin = str(dados.get('senha', ''))
 
         if pin != PIN_SISTEMA:
-            return jsonify({"resposta": "PIN INVÁLIDO. ACESSO NEGADO."}), 403
+            return jsonify({"resposta": "ACESSO NEGADO. PIN INCORRETO."}), 403
 
-        # Resposta direta para teste de estabilidade
+        # Chamada para o modelo Llama
         completion = client_groq.chat.completions.create(
             model="llama-3.3-70b-versatile",
-            messages=[{"role": "system", "content": "Você é o Killmoon."}, {"role": "user", "content": msg}]
+            messages=[
+                {"role": "system", "content": "Você é o Killmoon, assistente de Simon-Petrikov-q."},
+                {"role": "user", "content": msg}
+            ]
         )
         
         return jsonify({"resposta": completion.choices[0].message.content})
